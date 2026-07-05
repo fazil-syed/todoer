@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
@@ -17,7 +16,6 @@ func NewTodoer() (*TodoerCli, error) {
 	rootCmd := &cli.Command{
 		Name: "todoer",
 		Action: func(ctx context.Context, c *cli.Command) error {
-			fmt.Println("Todoer todoed")
 			return nil
 		},
 	}

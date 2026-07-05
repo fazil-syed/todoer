@@ -24,7 +24,7 @@ func (c *Commands) addTaskHandler(ctx context.Context, cmd *cli.Command) error {
 
 }
 
-func (c *Commands) AddCommand() *cli.Command {
+func (c *Commands) AddTasksCommand() *cli.Command {
 	cmd := &cli.Command{
 		Name:    "add",
 		Aliases: []string{"a"},

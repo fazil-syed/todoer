@@ -30,7 +30,9 @@ func main() {
 	tasksRepo := repository.NewTaskRepository(db.DB)
 	cmds := commands.New(tasksRepo)
 
-	todoer.RegisterCommand(cmds.AddCommand())
+	todoer.RegisterCommand(cmds.AddTasksCommand())
+	todoer.RegisterCommand(cmds.ListTasksCommand())
+	todoer.RegisterCommand(cmds.CompletTaskCommand())
 
 	todoer.StartTodoer(ctx)
 }

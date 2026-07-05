@@ -28,7 +28,7 @@ func (r *TaskRepository) Create(ctx context.Context, task *models.Task) error {
 
 func (r *TaskRepository) List(ctx context.Context) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx,
-		"SELECT * FROM tasks")
+		"SELECT id,title,done,created_at FROM tasks")
 	if err != nil {
 		return nil, err
 	}
@@ -40,10 +40,33 @@ func (r *TaskRepository) List(ctx context.Context) ([]models.Task, error) {
 	for rows.Next() {
 		var t models.Task
 
-		if err := rows.Scan(&t); err != nil {
+		if err := rows.Scan(&t.ID, &t.Title, &t.Done, &t.CreatedAt); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, t)
 	}
 	return tasks, nil
+}
+
+func (r *TaskRepository) Complete(ctx context.Context, id int64) error {
+	_, err := r.db.ExecContext(ctx,
+		"UPDATE tasks SET done = ? WHERE id = ?", true, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, error) {
+	row := r.db.QueryRowContext(ctx, "SELECT id,title,done,created_at FROM tasks WHERE id = ?", id)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	var task models.Task
+
+	if err := row.Scan(&task.ID, &task.Title, &task.Done, &task.CreatedAt); err != nil {
+		return nil, err
+	}
+	return &task, nil
 }
