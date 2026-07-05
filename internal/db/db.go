@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-var DB *sql.DB
-
 func getDBPath() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -45,11 +43,11 @@ func getDBPath() (string, error) {
 
 }
 
-func Init(ctx context.Context) {
+func Init(ctx context.Context) (*sql.DB, error) {
 	dbPath, err := getDBPath()
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	dir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dir, 0700); err != nil {
@@ -58,22 +56,22 @@ func Init(ctx context.Context) {
 
 	db, err := sql.Open("sqlite", dbPath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	timeOutCtx, timeOutcancel := context.WithTimeout(ctx, 5*time.Second)
 	defer timeOutcancel()
 	if err := db.PingContext(timeOutCtx); err != nil {
 		log.Fatal(err)
 	}
-	DB = db
+	return db, nil
 
 }
 
 //go:embed schema.sql
 var schema string
 
-func Migrate(ctx context.Context) error {
-	_, err := DB.ExecContext(ctx, schema)
+func Migrate(ctx context.Context, db *sql.DB) error {
+	_, err := db.ExecContext(ctx, schema)
 	if err != nil {
 		return err
 	}

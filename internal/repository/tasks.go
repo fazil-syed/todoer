@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/fazil-syed/todoer/models"
+	"github.com/fazil-syed/todoer/internal/models"
 )
 
 type TaskRepository struct {

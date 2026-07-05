@@ -14,10 +14,12 @@ type TodoerCli struct {
 
 func NewTodoer() (*TodoerCli, error) {
 	rootCmd := &cli.Command{
-		Name: "todoer",
+		Name:  "todoer",
+		Usage: "quick & dirty cli task manager",
 		Action: func(ctx context.Context, c *cli.Command) error {
 			return nil
 		},
+		UsageText: "todoer <command> arg --options",
 	}
 	t := &TodoerCli{rootCmd: rootCmd}
 	return t, nil

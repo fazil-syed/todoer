@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fazil-syed/todoer/models"
+	"github.com/fazil-syed/todoer/internal/models"
 	"github.com/urfave/cli/v3"
 )
 

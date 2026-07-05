@@ -16,18 +16,22 @@ func main() {
 
 	ctx := context.Background()
 
-	db.Init(ctx)
+	database, err := db.Init(ctx)
 
-	defer db.DB.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	db.Migrate(ctx)
+	defer database.Close()
+
+	db.Migrate(ctx, database)
 
 	todoer, err := cli.NewTodoer()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tasksRepo := repository.NewTaskRepository(db.DB)
+	tasksRepo := repository.NewTaskRepository(database)
 	cmds := commands.New(tasksRepo)
 
 	todoer.RegisterCommand(cmds.AddTasksCommand())
