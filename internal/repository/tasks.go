@@ -66,6 +66,15 @@ func (r *TaskRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
+func (r *TaskRepository) DeleteCompleted(ctx context.Context) error {
+	_, err := r.db.ExecContext(ctx,
+		"DELETE FROM tasks WHERE done = ?", true)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT id,title,done,created_at FROM tasks WHERE id = ?", id)
 	if err := row.Err(); err != nil {
