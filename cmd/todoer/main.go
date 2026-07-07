@@ -12,6 +12,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+var version = "dev"
+
 func main() {
 
 	ctx := context.Background()
@@ -26,7 +28,7 @@ func main() {
 
 	db.Migrate(ctx, database)
 
-	todoer, err := cli.NewTodoer()
+	todoer, err := cli.NewTodoer(version)
 	if err != nil {
 		log.Fatal(err)
 	}
