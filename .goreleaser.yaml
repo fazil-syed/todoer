@@ -61,6 +61,7 @@ homebrew_casks:
   - repository:
       owner: fazil-syed
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
     homepage: "https://github.com/fazil-syed/todoer"
     hooks:
