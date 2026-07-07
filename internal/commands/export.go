@@ -76,7 +76,7 @@ func (c *Commands) exportTasksCommand(ctx context.Context, cmd *cli.Command) err
 func (c *Commands) ExportTasksCommand() *cli.Command {
 	cmd := &cli.Command{
 		Name:    "export",
-		Aliases: []string{"c"},
+		Aliases: []string{"e"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "format",
