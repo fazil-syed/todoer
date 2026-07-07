@@ -37,6 +37,7 @@ func main() {
 	todoer.RegisterCommand(cmds.AddTasksCommand())
 	todoer.RegisterCommand(cmds.ListTasksCommand())
 	todoer.RegisterCommand(cmds.CompletTaskCommand())
+	todoer.RegisterCommand(cmds.ExportTasksCommand())
 
 	todoer.StartTodoer(ctx)
 }
