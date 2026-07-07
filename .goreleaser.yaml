@@ -56,3 +56,10 @@ release:
     ---
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+homebrew_casks:
+  - repository:
+      owner: fazil-syed
+      name: homebrew-tap
+
+    homepage: "https://github.com/fazil-syed/todoer"
