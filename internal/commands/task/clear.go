@@ -36,9 +36,10 @@ func (c *TaskCommand) ClearTasksCommand() *cli.Command {
 		Action:  c.clearTaskHandler,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "group",
-				Value: "default",
-				Usage: "specify which group the task belongs to ",
+				Name:    "group",
+				Value:   "default",
+				Aliases: []string{"g"},
+				Usage:   "specify which group the task belongs to ",
 			},
 		},
 	}

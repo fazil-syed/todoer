@@ -46,9 +46,10 @@ func (c *TaskCommand) AddTasksCommand() *cli.Command {
 		Usage:   "Add a task",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "group",
-				Value: "default",
-				Usage: "specify which group the task belongs to ",
+				Name:    "group",
+				Value:   "default",
+				Aliases: []string{"g"},
+				Usage:   "specify which group the task belongs to ",
 			},
 		},
 		Action: c.addTaskHandler,

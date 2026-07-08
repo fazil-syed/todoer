@@ -51,9 +51,10 @@ func (c *TaskCommand) ListTasksCommand() *cli.Command {
 		Action:  c.listTasksHandler,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "group",
-				Value: "default",
-				Usage: "specify which group the task belongs to ",
+				Name:    "group",
+				Value:   "default",
+				Aliases: []string{"g"},
+				Usage:   "specify which group the task belongs to ",
 			},
 		},
 	}

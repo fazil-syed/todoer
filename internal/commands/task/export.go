@@ -92,14 +92,16 @@ func (c *TaskCommand) ExportTasksCommand() *cli.Command {
 		Aliases: []string{"e"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "format",
-				Value: "csv",
-				Usage: "output format for export",
+				Name:    "format",
+				Value:   "csv",
+				Aliases: []string{"f"},
+				Usage:   "output format for export",
 			},
 			&cli.StringFlag{
-				Name:  "group",
-				Value: "default",
-				Usage: "specify which group the task belongs to ",
+				Name:    "group",
+				Value:   "default",
+				Aliases: []string{"g"},
+				Usage:   "specify which group the task belongs to ",
 			},
 		},
 
