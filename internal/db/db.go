@@ -3,11 +3,16 @@ package db
 import (
 	"context"
 	"database/sql"
+	"embed"
 	_ "embed"
+	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -67,13 +72,71 @@ func Init(ctx context.Context) (*sql.DB, error) {
 
 }
 
-//go:embed schema.sql
-var schema string
+//go:embed migrations/*.sql
+var migrationFiles embed.FS
 
 func Migrate(ctx context.Context, db *sql.DB) error {
-	_, err := db.ExecContext(ctx, schema)
+	_, err := db.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			version TEXT PRIMARY KEY
+		)
+	`)
+	if _, err := db.ExecContext(ctx, "PRAGMA foreign_keys = ON"); err != nil {
+		return err
+	}
 	if err != nil {
 		return err
 	}
+
+	files, err := fs.Glob(migrationFiles, "migrations/*.sql")
+
+	if err != nil {
+		return err
+	}
+
+	sort.Strings(files)
+
+	for _, file := range files {
+		version := strings.TrimSuffix(strings.TrimPrefix(file, "migrations/"), ".sql")
+
+		var exists bool
+
+		err := db.QueryRowContext(ctx, `
+		SELECT EXISTS(
+		SELECT 1 FROM schema_migrations WHERE version = ?)
+		`, version).Scan(&exists)
+
+		if err != nil {
+			return err
+		}
+		if exists {
+			continue
+		}
+
+		sqlBytes, err := migrationFiles.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return err
+		}
+
+		if _, err := tx.ExecContext(ctx, string(sqlBytes)); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("%s: %w", version, err)
+		}
+
+		if _, err := tx.ExecContext(ctx, "INSERT INTO schema_migrations(version) VALUES(?)", version); err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }

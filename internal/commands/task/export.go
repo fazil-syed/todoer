@@ -1,9 +1,11 @@
-package commands
+package task
 
 import (
 	"context"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -50,9 +52,19 @@ func exportJson(tasks []models.Task) error {
 	return nil
 }
 
-func (c *Commands) exportTasksCommand(ctx context.Context, cmd *cli.Command) error {
+func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) error {
 
-	tasks, err := c.tasksRepository.List(ctx)
+	groupName := cmd.String("group")
+
+	taskGroup, err := c.taskGroupsRepository.GetByName(ctx, groupName)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			println("group not found")
+		}
+		return err
+	}
+
+	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID)
 	if err != nil {
 		return err
 	}
@@ -73,7 +85,7 @@ func (c *Commands) exportTasksCommand(ctx context.Context, cmd *cli.Command) err
 
 }
 
-func (c *Commands) ExportTasksCommand() *cli.Command {
+func (c *TaskCommand) ExportTasksCommand() *cli.Command {
 	cmd := &cli.Command{
 		Name:    "export",
 		Aliases: []string{"e"},
@@ -83,8 +95,14 @@ func (c *Commands) ExportTasksCommand() *cli.Command {
 				Value: "csv",
 				Usage: "output format for export",
 			},
+			&cli.StringFlag{
+				Name:  "group",
+				Value: "default",
+				Usage: "specify which group the task belongs to ",
+			},
 		},
-		Usage:  "export all tasks to csv",
+
+		Usage:  "export all tasks",
 		Action: c.exportTasksCommand,
 	}
 	return cmd

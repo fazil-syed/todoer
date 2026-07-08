@@ -18,6 +18,9 @@ func NewTodoer(version string) (*TodoerCli, error) {
 		Usage:   "quick & dirty cli task manager",
 		Version: version,
 		Action: func(ctx context.Context, c *cli.Command) error {
+			if c.Args().Len() < 1 {
+				return cli.ShowRootCommandHelp(c)
+			}
 			return nil
 		},
 		UsageText: "todoer <command> arg --options",

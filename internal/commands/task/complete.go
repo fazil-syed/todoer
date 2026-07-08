@@ -1,4 +1,4 @@
-package commands
+package task
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func (c *Commands) completeTaskCommand(ctx context.Context, cmd *cli.Command) error {
+func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command) error {
 
 	taskID := cmd.Args().First()
 
@@ -35,7 +35,7 @@ func (c *Commands) completeTaskCommand(ctx context.Context, cmd *cli.Command) er
 
 }
 
-func (c *Commands) CompletTaskCommand() *cli.Command {
+func (c *TaskCommand) CompletTaskCommand() *cli.Command {
 	cmd := &cli.Command{
 		Name:    "complete",
 		Aliases: []string{"c"},

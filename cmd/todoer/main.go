@@ -6,7 +6,8 @@ import (
 	"log"
 
 	"github.com/fazil-syed/todoer/internal/cli"
-	"github.com/fazil-syed/todoer/internal/commands"
+	"github.com/fazil-syed/todoer/internal/commands/group"
+	"github.com/fazil-syed/todoer/internal/commands/task"
 	"github.com/fazil-syed/todoer/internal/db"
 	"github.com/fazil-syed/todoer/internal/repository"
 	_ "modernc.org/sqlite"
@@ -26,7 +27,9 @@ func main() {
 
 	defer database.Close()
 
-	db.Migrate(ctx, database)
+	if err := db.Migrate(ctx, database); err != nil {
+		log.Fatal(err)
+	}
 
 	todoer, err := cli.NewTodoer(version)
 	if err != nil {
@@ -34,14 +37,13 @@ func main() {
 	}
 
 	tasksRepo := repository.NewTaskRepository(database)
-	cmds := commands.New(tasksRepo)
+	taskGroupsRepo := repository.NewTaskGroupsRepository(database)
 
-	todoer.RegisterCommand(cmds.AddTasksCommand())
-	todoer.RegisterCommand(cmds.ListTasksCommand())
-	todoer.RegisterCommand(cmds.CompletTaskCommand())
-	todoer.RegisterCommand(cmds.ExportTasksCommand())
-	todoer.RegisterCommand(cmds.DeleteTaskCommand())
-	todoer.RegisterCommand(cmds.ClearTasksCommand())
+	taskCommand := task.NewTaskCommand(tasksRepo, taskGroupsRepo)
+	groupCommand := group.NewGroupCommand(taskGroupsRepo)
+
+	todoer.RegisterCommand(taskCommand.RegisterTaskCommands())
+	todoer.RegisterCommand(groupCommand.RegisterGroupCommands())
 
 	todoer.StartTodoer(ctx)
 }

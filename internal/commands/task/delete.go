@@ -1,4 +1,4 @@
-package commands
+package task
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func (c *Commands) deleteTasksHandler(ctx context.Context, cmd *cli.Command) error {
+func (c *TaskCommand) deleteTasksHandler(ctx context.Context, cmd *cli.Command) error {
 	taskID := cmd.Args().First()
 
 	if taskID == "" {
@@ -32,7 +32,7 @@ func (c *Commands) deleteTasksHandler(ctx context.Context, cmd *cli.Command) err
 	return nil
 }
 
-func (c *Commands) DeleteTaskCommand() *cli.Command {
+func (c *TaskCommand) DeleteTaskCommand() *cli.Command {
 	cmd := &cli.Command{
 		Name:    "delete",
 		Aliases: []string{"d"},

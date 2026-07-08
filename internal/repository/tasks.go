@@ -16,9 +16,10 @@ func NewTaskRepository(db *sql.DB) *TaskRepository {
 }
 func (r *TaskRepository) Create(ctx context.Context, task *models.Task) error {
 	result, err := r.db.ExecContext(ctx,
-		"INSERT INTO tasks (title, done) VALUES (?,?)",
+		"INSERT INTO tasks (title, done,group_id) VALUES (?,?,?)",
 		task.Title,
-		task.Done)
+		task.Done,
+		task.GroupId)
 	if err != nil {
 		return err
 	}
@@ -26,9 +27,9 @@ func (r *TaskRepository) Create(ctx context.Context, task *models.Task) error {
 	return nil
 }
 
-func (r *TaskRepository) List(ctx context.Context) ([]models.Task, error) {
+func (r *TaskRepository) List(ctx context.Context, groupID int64) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx,
-		"SELECT id,title,done,created_at FROM tasks")
+		"SELECT id,title,done,created_at,group_id FROM tasks WHERE group_id = ?", groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func (r *TaskRepository) List(ctx context.Context) ([]models.Task, error) {
 	for rows.Next() {
 		var t models.Task
 
-		if err := rows.Scan(&t.ID, &t.Title, &t.Done, &t.CreatedAt); err != nil {
+		if err := rows.Scan(&t.ID, &t.Title, &t.Done, &t.CreatedAt, &t.GroupId); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, t)
@@ -66,9 +67,18 @@ func (r *TaskRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *TaskRepository) DeleteCompleted(ctx context.Context) error {
+func (r *TaskRepository) DeleteCompleted(ctx context.Context, groupID int64) error {
 	_, err := r.db.ExecContext(ctx,
-		"DELETE FROM tasks WHERE done = ?", true)
+		"DELETE FROM tasks WHERE done = ? and group_id = ?", true, groupID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *TaskRepository) Truncate(ctx context.Context) error {
+	_, err := r.db.ExecContext(ctx,
+		"DELETE FROM tasks")
 	if err != nil {
 		return err
 	}
@@ -76,14 +86,14 @@ func (r *TaskRepository) DeleteCompleted(ctx context.Context) error {
 }
 
 func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, error) {
-	row := r.db.QueryRowContext(ctx, "SELECT id,title,done,created_at FROM tasks WHERE id = ?", id)
+	row := r.db.QueryRowContext(ctx, "SELECT id,title,done,created_at,group_id FROM tasks WHERE id = ?", id)
 	if err := row.Err(); err != nil {
 		return nil, err
 	}
 
 	var task models.Task
 
-	if err := row.Scan(&task.ID, &task.Title, &task.Done, &task.CreatedAt); err != nil {
+	if err := row.Scan(&task.ID, &task.Title, &task.Done, &task.CreatedAt, &task.GroupId); err != nil {
 		return nil, err
 	}
 	return &task, nil
