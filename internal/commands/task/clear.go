@@ -16,6 +16,7 @@ func (c *TaskCommand) clearTaskHandler(ctx context.Context, cmd *cli.Command) er
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			println("group not found")
+			return nil
 		}
 		return err
 	}

@@ -60,6 +60,7 @@ func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			println("group not found")
+			return nil
 		}
 		return err
 	}
