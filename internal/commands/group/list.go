@@ -16,6 +16,7 @@ func (c *GroupCommand) listGroupsHandler(ctx context.Context, cmd *cli.Command) 
 
 	if len(groups) == 0 {
 		fmt.Println("No groups found")
+		return nil
 	}
 	fmt.Println("ID \t Name")
 	for _, group := range groups {

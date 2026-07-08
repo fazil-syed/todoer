@@ -24,13 +24,13 @@ func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) er
 	if err != nil {
 		return err
 	}
-	// Print the first line
-
-	fmt.Println("completed	task	id ")
-
 	if len(tasks) == 0 {
 		fmt.Println("No tasks found")
+		return nil
 	}
+
+	// Print the first line
+	fmt.Println("completed	task	id ")
 
 	for _, task := range tasks {
 		var firstPart string = "[]"
