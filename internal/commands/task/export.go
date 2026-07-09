@@ -55,6 +55,7 @@ func exportJson(tasks []models.Task) error {
 func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) error {
 
 	groupName := cmd.String("group")
+	sortOrder := cmd.String("sort")
 
 	taskGroup, err := c.taskGroupsRepository.GetByName(ctx, groupName)
 	if err != nil {
@@ -64,8 +65,14 @@ func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) 
 		}
 		return err
 	}
+	switch sortOrder {
+	case "done", "created_at", "id":
+	default:
+		fmt.Println("invalid sort order")
+		return nil
+	}
 
-	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID)
+	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID, sortOrder)
 	if err != nil {
 		return err
 	}
@@ -102,6 +109,12 @@ func (c *TaskCommand) ExportTasksCommand() *cli.Command {
 				Value:   "default",
 				Aliases: []string{"g"},
 				Usage:   "specify which group the task belongs to ",
+			},
+			&cli.StringFlag{
+				Name:    "sort",
+				Value:   "id",
+				Aliases: []string{"s"},
+				Usage:   "sort order for sorting the tasks",
 			},
 		},
 

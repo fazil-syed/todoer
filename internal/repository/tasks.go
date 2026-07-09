@@ -27,9 +27,16 @@ func (r *TaskRepository) Create(ctx context.Context, task *models.Task) error {
 	return nil
 }
 
-func (r *TaskRepository) List(ctx context.Context, groupID int64) ([]models.Task, error) {
+func (r *TaskRepository) List(ctx context.Context, groupID int64, orderBy string) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx,
-		"SELECT id,title,done,created_at,group_id FROM tasks WHERE group_id = ?", groupID)
+		`SELECT id,title,done,created_at,group_id
+		 FROM tasks
+		WHERE group_id = ?
+			ORDER BY
+				CASE WHEN ? = 'done' THEN done END ASC,
+				CASE WHEN ? = 'created_at' THEN created_at END ASC,
+				id ASC
+		`, groupID, orderBy, orderBy)
 	if err != nil {
 		return nil, err
 	}

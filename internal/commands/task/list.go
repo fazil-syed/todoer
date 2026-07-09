@@ -33,16 +33,23 @@ func wrapText(s string, width int) []string {
 
 func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) error {
 	groupName := cmd.String("group")
-
+	sortOrder := cmd.String("sort")
 	taskGroup, err := c.taskGroupsRepository.GetByName(ctx, groupName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			println("group not found")
+			fmt.Println("group not found")
 		}
 		return err
 	}
 
-	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID)
+	switch sortOrder {
+	case "done", "created_at", "id":
+	default:
+		fmt.Println("invalid sort order")
+		return nil
+	}
+
+	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID, sortOrder)
 	if err != nil {
 		return err
 	}
@@ -50,11 +57,13 @@ func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) er
 		fmt.Println("No tasks found")
 		return nil
 	}
+
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	defer w.Flush()
 
 	// Print the first line
 	fmt.Fprintln(w, "Status\tTask\tID")
+	fmt.Fprintln(w, "----------------------------------------")
 	for _, task := range tasks {
 		status := "[ ]"
 		if task.Done {
@@ -86,6 +95,12 @@ func (c *TaskCommand) ListTasksCommand() *cli.Command {
 				Value:   "default",
 				Aliases: []string{"g"},
 				Usage:   "specify which group the task belongs to ",
+			},
+			&cli.StringFlag{
+				Name:    "sort",
+				Value:   "id",
+				Aliases: []string{"s"},
+				Usage:   "sort order for sorting the tasks",
 			},
 		},
 	}
