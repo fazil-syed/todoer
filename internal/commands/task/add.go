@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/fazil-syed/todoer/internal/models"
 	"strings"
 
-	"github.com/fazil-syed/todoer/internal/models"
 	"github.com/urfave/cli/v3"
 )
 
@@ -15,6 +15,10 @@ func (c *TaskCommand) addTaskHandler(ctx context.Context, cmd *cli.Command) erro
 
 	taskTitle := strings.Join(cmd.Args().Slice(), " ")
 
+	if taskTitle == "" {
+		fmt.Println("please enter a task")
+		return nil
+	}
 	groupName := cmd.String("group")
 
 	taskGroup, err := c.taskGroupsRepository.GetByName(ctx, groupName)
