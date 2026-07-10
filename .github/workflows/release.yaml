@@ -2,12 +2,25 @@ name: release and publish to tap
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - "main"
 
 permissions:
   contents: write
 jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup=go@v6
+        with:
+          go-version-file: go.mod
+      - uses: go-semantic-release/action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   goreleaser:
     runs-on: ubuntu-latest
 
