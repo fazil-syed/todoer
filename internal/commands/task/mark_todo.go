@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command) error {
+func (c *TaskCommand) markTodoTaskCommand(ctx context.Context, cmd *cli.Command) error {
 
 	taskID := cmd.Args().First()
 
@@ -21,7 +21,7 @@ func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command)
 	if err != nil {
 		return err
 	}
-	if err := c.tasksRepository.Complete(ctx, int64(id)); err != nil {
+	if err := c.tasksRepository.UpdateStatus(ctx, int64(id), "TODO"); err != nil {
 		return err
 	}
 	task, err := c.tasksRepository.GetById(ctx, int64(id))
@@ -30,17 +30,17 @@ func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command)
 		return err
 	}
 
-	fmt.Println("completed task", task.Title)
+	fmt.Println("marked task", task.Title, "as TODO.")
 	return nil
 
 }
 
-func (c *TaskCommand) CompletTaskCommand() *cli.Command {
+func (c *TaskCommand) MarkTodoTaskCommand() *cli.Command {
 	cmd := &cli.Command{
-		Name:    "complete",
-		Aliases: []string{"c", "mark-done", "md"},
-		Usage:   "Complete a task",
-		Action:  c.completeTaskCommand,
+		Name:    "mark-todo",
+		Aliases: []string{"mt"},
+		Usage:   "mark a task as todo",
+		Action:  c.markTodoTaskCommand,
 	}
 	return cmd
 }

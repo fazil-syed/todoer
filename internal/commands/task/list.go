@@ -65,9 +65,14 @@ func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) er
 	fmt.Fprintln(w, "Status\tTask\tID")
 	fmt.Fprintln(w, "----------------------------------------")
 	for _, task := range tasks {
-		status := "[ ]"
-		if task.Done {
+		var status string
+		switch task.Status {
+		case "DONE":
 			status = "[x]"
+		case "IN_PROGRESS":
+			status = "[i]"
+		default:
+			status = "[ ]"
 		}
 
 		lines := wrapText(task.Title, 40)

@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/fazil-syed/todoer/internal/models"
 	"strings"
+
+	"github.com/fazil-syed/todoer/internal/models"
 
 	"github.com/urfave/cli/v3"
 )
@@ -33,7 +34,7 @@ func (c *TaskCommand) addTaskHandler(ctx context.Context, cmd *cli.Command) erro
 	task := &models.Task{
 		Title:   taskTitle,
 		GroupId: taskGroup.ID,
-		Done:    false,
+		Status:  "TODO",
 	}
 	if err := c.tasksRepository.Create(ctx, task); err != nil {
 		return err

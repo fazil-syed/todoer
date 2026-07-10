@@ -28,7 +28,7 @@ func exportCsv(tasks []models.Task) error {
 		return err
 	}
 	for _, task := range tasks {
-		if err := writer.Write([]string{task.Title, strconv.FormatBool(task.Done), strconv.FormatInt(task.ID, 10)}); err != nil {
+		if err := writer.Write([]string{task.Title, task.Status, strconv.FormatInt(task.ID, 10)}); err != nil {
 			return err
 		}
 	}
