@@ -114,3 +114,32 @@ func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, e
 	}
 	return &task, nil
 }
+
+func (r *TaskRepository) GetAllTasksByGroup(ctx context.Context, orderBy string) ([]models.Task, error) {
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT t.id,t.title,t.status,t.created_at,t.group_id,g.name
+		 FROM tasks t
+		 INNER JOIN task_groups g ON t.group_id=g.id
+			ORDER BY
+				CASE WHEN ? = 'done' THEN status END DESC,
+				CASE WHEN ? = 'created_at' THEN created_at END ASC,
+				g.name ASC,
+				t.id ASC
+		`, orderBy, orderBy)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var t models.Task
+
+		if err := rows.Scan(&t.ID, &t.Title, &t.Status, &t.CreatedAt, &t.GroupId, &t.GroupName); err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+	return tasks, nil
+}

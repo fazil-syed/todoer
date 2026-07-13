@@ -8,6 +8,7 @@ type Task struct {
 	Status    string    `json:"status"`
 	GroupId   int64     `json:"group_id"`
 	CreatedAt time.Time `json:"-"`
+	GroupName string    `json:"-"`
 }
 
 type TaskGroup struct {
