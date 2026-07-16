@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/urfave/cli/v3"
 )
@@ -22,6 +23,12 @@ func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command)
 		return err
 	}
 	if err := c.tasksRepository.Complete(ctx, int64(id)); err != nil {
+		return err
+	}
+	if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), time.Now()); err != nil {
+		return err
+	}
+	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), time.Now()); err != nil {
 		return err
 	}
 	task, err := c.tasksRepository.GetById(ctx, int64(id))

@@ -24,11 +24,19 @@ func exportCsv(tasks []models.Task) error {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 	// Write header
-	if err := writer.Write([]string{"task", "completed", "id"}); err != nil {
+	if err := writer.Write([]string{"id", "status", "task", "started_at", "completed_at"}); err != nil {
 		return err
 	}
 	for _, task := range tasks {
-		if err := writer.Write([]string{task.Title, task.Status, strconv.FormatInt(task.ID, 10)}); err != nil {
+		started := "-"
+		if task.StartedAt.Valid {
+			started = task.StartedAt.Time.Format("02 Jan 2006 03:04 PM")
+		}
+		completed := "-"
+		if task.CompletedAt.Valid {
+			completed = task.CompletedAt.Time.Format("02 Jan 2006 03:04 PM")
+		}
+		if err := writer.Write([]string{strconv.FormatInt(task.ID, 10), task.Status, task.Title, started, completed}); err != nil {
 			return err
 		}
 	}

@@ -62,7 +62,7 @@ func (c *TaskCommand) AddTasksCommand() *cli.Command {
 
   todoer task add Buy milk
 
-  todoer task add Fix bug --group work
+  todoer task add Fix bug -g work
 
   todoer task add Pay rent --group personal`,
 	}
