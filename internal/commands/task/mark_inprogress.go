@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/urfave/cli/v3"
 )
@@ -24,6 +25,10 @@ func (c *TaskCommand) markInprogressTaskCommand(ctx context.Context, cmd *cli.Co
 	if err := c.tasksRepository.UpdateStatus(ctx, int64(id), "IN_PROGRESS"); err != nil {
 		return err
 	}
+	if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), time.Now()); err != nil {
+		return err
+	}
+
 	task, err := c.tasksRepository.GetById(ctx, int64(id))
 
 	if err != nil {
