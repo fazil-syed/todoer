@@ -1,0 +1,15 @@
+id,status,task,started_at,completed_at
+25,TODO,move tasks between groups,-,-
+26,TODO,integrate with bubbletea,-,-
+27,TODO,add working date to task,-,-
+36,TODO,allow a directory based default group and overridable via group flag and setup via group set default-group,-,-
+37,TODO,create a readme,-,-
+41,TODO,add a update command to update task title,-,-
+52,TODO,add export all group tasks,-,-
+53,TODO,add filter option to filter by status,-,-
+59,TODO,add archive tasks which will not display completed tasks in list again unless explicitly flagged,-,-
+28,DONE,"add update command with required status option to update status as todo,done,inprogress",-,-
+29,DONE,add force flag for purge,-,-
+42,DONE,setup semantic release on PR merge,-,-
+51,DONE,add list all groups tasks flag with group name column and group by group name,16 Jul 2026 09:43 PM,16 Jul 2026 09:43 PM
+58,DONE,capture started date and completed date,16 Jul 2026 09:42 PM,16 Jul 2026 09:42 PM
