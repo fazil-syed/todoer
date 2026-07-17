@@ -10,9 +10,7 @@
 - Delete individual tasks, clear completed tasks from a group, or purge all tasks with an explicit confirmation flag
 - Export group data as CSV or JSON
 
-## Requirements
 
-- Go 1.26.3 or later
 
 ## Install
 
@@ -25,6 +23,10 @@ brew install todoer
 ```
 
 ### From source
+
+#### Requirements
+
+- Go 1.26.3 or later
 
 Clone the repository and build the binary:
 
