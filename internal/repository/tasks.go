@@ -36,7 +36,7 @@ func (r *TaskRepository) List(ctx context.Context, groupID int64, orderBy string
 			ORDER BY
 				CASE WHEN ? = 'done' THEN status END DESC,
 				CASE WHEN ? = 'created_at' THEN created_at END ASC,
-				id ASC
+				id DESC
 		`, groupID, orderBy, orderBy)
 	if err != nil {
 		return nil, err
