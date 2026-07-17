@@ -75,7 +75,7 @@ func (r *TaskRepository) UpdateStatus(ctx context.Context, id int64, status stri
 	return nil
 }
 
-func (r *TaskRepository) UpdateStartedAtTime(ctx context.Context, id int64, at_time time.Time) error {
+func (r *TaskRepository) UpdateStartedAtTime(ctx context.Context, id int64, at_time *time.Time) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE tasks SET started_at = ? WHERE id = ?", at_time, id)
 	if err != nil {
@@ -83,7 +83,7 @@ func (r *TaskRepository) UpdateStartedAtTime(ctx context.Context, id int64, at_t
 	}
 	return nil
 }
-func (r *TaskRepository) UpdateCompletedAtTime(ctx context.Context, id int64, at_time time.Time) error {
+func (r *TaskRepository) UpdateCompletedAtTime(ctx context.Context, id int64, at_time *time.Time) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE tasks SET completed_at = ? WHERE id = ?", at_time, id)
 	if err != nil {
@@ -120,14 +120,14 @@ func (r *TaskRepository) Truncate(ctx context.Context) error {
 }
 
 func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, error) {
-	row := r.db.QueryRowContext(ctx, "SELECT id,title,status,created_at,group_id FROM tasks WHERE id = ?", id)
+	row := r.db.QueryRowContext(ctx, "SELECT id,title,status,created_at,started_at,completed_at,group_id FROM tasks WHERE id = ?", id)
 	if err := row.Err(); err != nil {
 		return nil, err
 	}
 
 	var task models.Task
 
-	if err := row.Scan(&task.ID, &task.Title, &task.Status, &task.CreatedAt, &task.GroupId); err != nil {
+	if err := row.Scan(&task.ID, &task.Title, &task.Status, &task.CreatedAt, &task.StartedAt, &task.CompletedAt, &task.GroupId); err != nil {
 		return nil, err
 	}
 	return &task, nil

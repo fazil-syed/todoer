@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -22,21 +23,26 @@ func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command)
 	if err != nil {
 		return err
 	}
-	if err := c.tasksRepository.Complete(ctx, int64(id)); err != nil {
-		return err
-	}
-	if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), time.Now()); err != nil {
-		return err
-	}
-	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), time.Now()); err != nil {
-		return err
-	}
 	task, err := c.tasksRepository.GetById(ctx, int64(id))
 
 	if err != nil {
 		return err
 	}
-
+	if task.Status == "DONE" {
+		return errors.New("Task already in DONE state")
+	}
+	if err := c.tasksRepository.Complete(ctx, int64(id)); err != nil {
+		return err
+	}
+	now := time.Now()
+	if !task.StartedAt.Valid {
+		if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), &now); err != nil {
+			return err
+		}
+	}
+	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), &now); err != nil {
+		return err
+	}
 	fmt.Println("completed task", task.Title)
 	return nil
 

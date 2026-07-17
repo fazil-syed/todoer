@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -22,16 +23,22 @@ func (c *TaskCommand) markInprogressTaskCommand(ctx context.Context, cmd *cli.Co
 	if err != nil {
 		return err
 	}
-	if err := c.tasksRepository.UpdateStatus(ctx, int64(id), "IN_PROGRESS"); err != nil {
-		return err
-	}
-	if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), time.Now()); err != nil {
-		return err
-	}
-
 	task, err := c.tasksRepository.GetById(ctx, int64(id))
 
 	if err != nil {
+		return err
+	}
+	if task.Status == "IN_PROGRESS" {
+		return errors.New("Task already in IN_PROGRESS state")
+	}
+	if err := c.tasksRepository.UpdateStatus(ctx, int64(id), "IN_PROGRESS"); err != nil {
+		return err
+	}
+	now := time.Now()
+	if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), &now); err != nil {
+		return err
+	}
+	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), nil); err != nil {
 		return err
 	}
 

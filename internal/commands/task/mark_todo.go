@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -21,10 +22,25 @@ func (c *TaskCommand) markTodoTaskCommand(ctx context.Context, cmd *cli.Command)
 	if err != nil {
 		return err
 	}
+	task, err := c.tasksRepository.GetById(ctx, int64(id))
+
+	if err != nil {
+		return err
+	}
+	if task.Status == "TODO" {
+		return errors.New("Task already in TODO state")
+	}
 	if err := c.tasksRepository.UpdateStatus(ctx, int64(id), "TODO"); err != nil {
 		return err
 	}
-	task, err := c.tasksRepository.GetById(ctx, int64(id))
+	if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), nil); err != nil {
+		return err
+	}
+	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), nil); err != nil {
+		return err
+	}
+
+	task, err = c.tasksRepository.GetById(ctx, int64(id))
 
 	if err != nil {
 		return err
