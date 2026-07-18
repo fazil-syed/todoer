@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -43,7 +44,16 @@ func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command)
 	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), &now); err != nil {
 		return err
 	}
-	fmt.Println("completed task", task.Title)
+	task, err = c.tasksRepository.GetById(ctx, int64(task.ID))
+
+	if err != nil {
+		return err
+	}
+	fmt.Println("Completed task")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintSingleTaskHeadLine()
+	printer.PrintSingleTask(*task, false)
 	return nil
 
 }

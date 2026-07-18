@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/urfave/cli/v3"
@@ -28,7 +29,11 @@ func (c *TaskCommand) deleteTasksHandler(ctx context.Context, cmd *cli.Command) 
 		return err
 	}
 
-	fmt.Println("deleted task", task.Title)
+	fmt.Println("Deleted task")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintSingleTaskHeadLine()
+	printer.PrintSingleTask(*task, false)
 	return nil
 }
 

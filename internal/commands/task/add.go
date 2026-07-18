@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/fazil-syed/todoer/internal/models"
@@ -39,7 +40,17 @@ func (c *TaskCommand) addTaskHandler(ctx context.Context, cmd *cli.Command) erro
 	if err := c.tasksRepository.Create(ctx, task); err != nil {
 		return err
 	}
-	fmt.Printf("added task %s to group %s\n", task.Title, taskGroup.Name)
+	task, err = c.tasksRepository.GetById(ctx, int64(task.ID))
+
+	if err != nil {
+		return err
+	}
+	fmt.Println("Added task")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintSingleTaskHeadLine()
+	printer.PrintSingleTask(*task, false)
+
 	return nil
 
 }

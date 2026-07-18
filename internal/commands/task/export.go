@@ -14,8 +14,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func exportCsv(tasks []models.Task) error {
-	file, err := os.Create("tasks.csv")
+func exportCsv(tasks []models.Task, filename string) error {
+	file, err := os.Create(fmt.Sprintf("%s.csv", filename))
 	if err != nil {
 		return err
 	}
@@ -43,8 +43,8 @@ func exportCsv(tasks []models.Task) error {
 	return nil
 }
 
-func exportJson(tasks []models.Task) error {
-	file, err := os.Create("tasks.json")
+func exportJson(tasks []models.Task, filename string) error {
+	file, err := os.Create(fmt.Sprintf("%s.json", filename))
 	if err != nil {
 		return err
 	}
@@ -64,6 +64,7 @@ func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) 
 
 	groupName := cmd.String("group")
 	sortOrder := cmd.String("sort")
+	fileName := cmd.String("output")
 
 	taskGroup, err := c.taskGroupsRepository.GetByName(ctx, groupName)
 	if err != nil {
@@ -87,10 +88,10 @@ func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) 
 	format := cmd.String("format")
 	switch format {
 	case "csv":
-		exportCsv(tasks)
+		exportCsv(tasks, fileName)
 
 	case "json":
-		exportJson(tasks)
+		exportJson(tasks, fileName)
 
 	default:
 		fmt.Println("unknown format specified")
@@ -123,6 +124,12 @@ func (c *TaskCommand) ExportTasksCommand() *cli.Command {
 				Value:   "id",
 				Aliases: []string{"s"},
 				Usage:   "sort order for sorting the tasks",
+			},
+			&cli.StringFlag{
+				Name:    "output",
+				Value:   "tasks",
+				Aliases: []string{"o"},
+				Usage:   "output file name for export",
 			},
 		},
 

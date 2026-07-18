@@ -6,30 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
-	"text/tabwriter"
 
 	"github.com/urfave/cli/v3"
 )
-
-func wrapText(s string, width int) []string {
-	words := strings.Fields(s)
-	if len(words) == 0 {
-		return []string{""}
-	}
-	var lines []string
-	line := words[0]
-	for _, word := range words[1:] {
-		if len(line)+1+(len(word)) <= width {
-			line += " " + word
-		} else {
-			lines = append(lines, line)
-			line = word
-		}
-	}
-	lines = append(lines, line)
-	return lines
-}
 
 func (c *TaskCommand) listAllGroupTasks(ctx context.Context, cmd *cli.Command) error {
 	sortOrder := cmd.String("sort")
@@ -41,32 +20,12 @@ func (c *TaskCommand) listAllGroupTasks(ctx context.Context, cmd *cli.Command) e
 		fmt.Println("No tasks found")
 		return nil
 	}
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	defer w.Flush()
-
 	// Print the first line
-	fmt.Fprintln(w, "Status\tTask\tID\tGroup")
-	fmt.Fprintln(w, "----------------------------------------")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintTaskHeadLineWithGroup()
 	for _, task := range tasks {
-		var status string
-		switch task.Status {
-		case "DONE":
-			status = "[x]"
-		case "IN_PROGRESS":
-			status = "[i]"
-		default:
-			status = "[ ]"
-		}
-
-		lines := wrapText(task.Title, 40)
-		// First line
-		fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", status, lines[0], task.ID, task.GroupName)
-
-		// Remaining lines
-		for _, line := range lines[1:] {
-			fmt.Fprintf(w, "\t%s\t\n", line)
-		}
+		printer.PrintSingleTask(task, true)
 	}
 	return nil
 }
@@ -99,40 +58,12 @@ func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) er
 		fmt.Println("No tasks found")
 		return nil
 	}
-
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-	defer w.Flush()
-
 	// Print the first line
-	fmt.Fprintln(w, "ID\tStatus\tTask\tStarted At\tCompleted At")
-	fmt.Fprintln(w, "--\t------\t----\t----------\t------------")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintSingleTaskHeadLine()
 	for _, task := range tasks {
-		var status string
-		switch task.Status {
-		case "DONE":
-			status = "[x]"
-		case "IN_PROGRESS":
-			status = "[i]"
-		default:
-			status = "[ ]"
-		}
-
-		lines := wrapText(task.Title, 40)
-		started := "-"
-		if task.StartedAt.Valid {
-			started = task.StartedAt.Time.Format("02 Jan 2006 03:04 PM")
-		}
-		completed := "-"
-		if task.CompletedAt.Valid {
-			completed = task.CompletedAt.Time.Format("02 Jan 2006 03:04 PM")
-		}
-		// First line
-		fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n", task.ID, status, lines[0], started, completed)
-
-		// Remaining lines
-		for _, line := range lines[1:] {
-			fmt.Fprintf(w, "\t\t%s\t\t\n", line)
-		}
+		printer.PrintSingleTask(task, false)
 	}
 	return nil
 

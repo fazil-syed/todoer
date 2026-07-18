@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -41,8 +42,16 @@ func (c *TaskCommand) markInprogressTaskCommand(ctx context.Context, cmd *cli.Co
 	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), nil); err != nil {
 		return err
 	}
+	task, err = c.tasksRepository.GetById(ctx, int64(task.ID))
 
-	fmt.Println("marked task", task.Title, "as in progress.")
+	if err != nil {
+		return err
+	}
+	fmt.Println("Updated task to inprogress")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintSingleTaskHeadLine()
+	printer.PrintSingleTask(*task, false)
 	return nil
 
 }

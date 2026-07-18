@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/urfave/cli/v3"
 )
@@ -20,10 +21,24 @@ func (c *TaskCommand) clearTaskHandler(ctx context.Context, cmd *cli.Command) er
 		}
 		return err
 	}
+	tasks, err := c.tasksRepository.ListByStatusAndGroup(ctx, taskGroup.ID, "DONE")
+	if err != nil {
+		return err
+	}
+	if len(tasks) == 0 {
+		fmt.Println("No tasks found")
+		return nil
+	}
 	if err := c.tasksRepository.DeleteCompleted(ctx, taskGroup.ID); err != nil {
 		return err
 	}
 	fmt.Println("completed tasks cleared")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintTaskHeadLineWithGroup()
+	for _, task := range tasks {
+		printer.PrintSingleTask(task, true)
+	}
 	return nil
 
 }
