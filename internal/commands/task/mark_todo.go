@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/urfave/cli/v3"
@@ -45,8 +46,11 @@ func (c *TaskCommand) markTodoTaskCommand(ctx context.Context, cmd *cli.Command)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("marked task", task.Title, "as TODO.")
+	fmt.Println("Updated task to Todo")
+	printer := NewTaskPrinter(os.Stdout)
+	defer printer.Flush()
+	printer.PrintSingleTaskHeadLine()
+	printer.PrintSingleTask(*task, false)
 	return nil
 
 }

@@ -28,6 +28,32 @@ func (r *TaskRepository) Create(ctx context.Context, task *models.Task) error {
 	return nil
 }
 
+func (r *TaskRepository) ListByStatusAndGroup(ctx context.Context, groupID int64, status string) ([]models.Task, error) {
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT id,title,status,started_at,completed_at,created_at,group_id
+		 FROM tasks
+		WHERE group_id = ? AND status = ?
+			ORDER BY
+				id DESC
+		`, groupID, status)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var t models.Task
+
+		if err := rows.Scan(&t.ID, &t.Title, &t.Status, &t.StartedAt, &t.CompletedAt, &t.CreatedAt, &t.GroupId); err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+	return tasks, nil
+}
 func (r *TaskRepository) List(ctx context.Context, groupID int64, orderBy string) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx,
 		`SELECT id,title,status,started_at,completed_at,created_at,group_id
