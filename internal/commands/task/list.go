@@ -46,8 +46,9 @@ func (c *TaskCommand) listAllGroupTasks(ctx context.Context, cmd *cli.Command) e
 	defer w.Flush()
 
 	// Print the first line
-	fmt.Fprintln(w, "Status\tTask\tID\tGroup")
-	fmt.Fprintln(w, "----------------------------------------")
+
+	fmt.Fprintln(w, "Group\tID\tStatus\tTask\tStarted At\tCompleted At")
+	fmt.Fprintln(w, "-----\t--\t------\t----\t----------\t------------")
 	for _, task := range tasks {
 		var status string
 		switch task.Status {
@@ -60,12 +61,20 @@ func (c *TaskCommand) listAllGroupTasks(ctx context.Context, cmd *cli.Command) e
 		}
 
 		lines := wrapText(task.Title, 40)
+		started := "-"
+		if task.StartedAt.Valid {
+			started = task.StartedAt.Time.Format("02 Jan 2006 03:04 PM")
+		}
+		completed := "-"
+		if task.CompletedAt.Valid {
+			completed = task.CompletedAt.Time.Format("02 Jan 2006 03:04 PM")
+		}
 		// First line
-		fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", status, lines[0], task.ID, task.GroupName)
+		fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\t%s\n", task.GroupName, task.ID, status, lines[0], started, completed)
 
 		// Remaining lines
 		for _, line := range lines[1:] {
-			fmt.Fprintf(w, "\t%s\t\n", line)
+			fmt.Fprintf(w, "\t\t\t%s\t\t\n", line)
 		}
 	}
 	return nil
