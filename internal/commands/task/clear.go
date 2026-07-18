@@ -35,9 +35,9 @@ func (c *TaskCommand) clearTaskHandler(ctx context.Context, cmd *cli.Command) er
 	fmt.Println("completed tasks cleared")
 	printer := NewTaskPrinter(os.Stdout)
 	defer printer.Flush()
-	printer.PrintSingleTaskHeadLine()
+	printer.PrintTaskHeadLineWithGroup()
 	for _, task := range tasks {
-		printer.PrintSingleTask(task, false)
+		printer.PrintSingleTask(task, true)
 	}
 	return nil
 
