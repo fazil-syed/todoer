@@ -62,7 +62,7 @@ func (c *GroupCommand) ListGroupStatsCommand() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "group",
-				Value:   "default",
+				Value:   "all",
 				Aliases: []string{"g"},
 				Usage:   "specify which group the task belongs to ",
 			},

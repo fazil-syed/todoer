@@ -48,8 +48,8 @@ func (c *TaskCommand) addTaskHandler(ctx context.Context, cmd *cli.Command) erro
 	fmt.Println("Added task")
 	printer := NewTaskPrinter(os.Stdout)
 	defer printer.Flush()
-	printer.PrintSingleTaskHeadLine()
-	printer.PrintSingleTask(*task, false)
+	printer.PrintTaskHeadLineWithGroup()
+	printer.PrintSingleTask(*task, true)
 
 	return nil
 
