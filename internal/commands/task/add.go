@@ -49,6 +49,7 @@ func (c *TaskCommand) addTaskHandler(ctx context.Context, cmd *cli.Command) erro
 	printer := NewTaskPrinter(os.Stdout)
 	defer printer.Flush()
 	printer.PrintTaskHeadLineWithGroup()
+	task.GroupName = groupName
 	printer.PrintSingleTask(*task, true)
 
 	return nil

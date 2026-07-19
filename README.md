@@ -5,10 +5,11 @@
 ## Features
 
 - Create and list task groups, including the automatically created `default` group
+- View TODO, in-progress, completed, and total task counts for one group or all groups
 - Add tasks, move them between TODO, in-progress, and completed states, and record timestamps
 - List a single group's tasks or every task across groups, with sortable output
 - Delete individual tasks, clear completed tasks from a group, or purge all tasks with an explicit confirmation flag
-- Export group data as CSV or JSON
+- Export group data as CSV or JSON with a custom output filename
 
 
 
@@ -72,6 +73,7 @@ Use `todoer --help`, `todoer task --help`, or `todoer group --help` for the CLI'
 | --- | --- | --- |
 | `todoer group add <name>` | `group` → `g`; `add` → `a` | Create a task group. |
 | `todoer group list` | `group` → `g`; `list` → `l` | List all task groups. |
+| `todoer group stats [--group <name>\|all]` | `group` → `g`; `stats` → `st` | Show TODO, in-progress, completed, and total task counts. Defaults to all groups. |
 
 ### Tasks
 
@@ -84,7 +86,7 @@ Use `todoer --help`, `todoer task --help`, or `todoer group --help` for the CLI'
 | `todoer task complete <id>` | `task` → `t`; `complete` → `c`, `mark-done`, `md` | Mark a task done and set its completion time. |
 | `todoer task delete <id>` | `task` → `t`; `delete` → `d` | Permanently delete one task. |
 | `todoer task clear [--group <name>]` | `task` → `t`; `clear` → `cl` | Permanently remove completed tasks from a group. |
-| `todoer task export [--format csv\|json] [--group <name>] [--sort id\|created_at\|done]` | `task` → `t`; `export` → `e` | Export a group's tasks. |
+| `todoer task export [--format csv\|json] [--group <name>] [--sort id\|created_at\|done] [--output <filename>]` | `task` → `t`; `export` → `e` | Export a group's tasks. |
 | `todoer task purge --force` | `task` → `t`; `purge` → `p` | Permanently remove all tasks in every group. |
 
 ### Flags
@@ -92,12 +94,14 @@ Use `todoer --help`, `todoer task --help`, or `todoer group --help` for the CLI'
 | Command | Flag | Alias | Default | Description |
 | --- | --- | --- | --- | --- |
 | `task add` | `--group <name>` | `-g` | `default` | Assign the new task to a group. |
+| `group stats` | `--group <name\|all>` | `-g` | `all` | Show statistics for one group, or for every group. |
 | `task list` | `--group <name\|all>` | `-g` | `default` | List one group, or use `all` to list every group. |
 | `task list` | `--sort id\|created_at\|done` | `-s` | `id` | Set the task sort order. |
 | `task clear` | `--group <name>` | `-g` | `default` | Clear completed tasks only from this group. |
 | `task export` | `--format csv\|json` | `-f` | `csv` | Choose the export file format. |
 | `task export` | `--group <name>` | `-g` | `default` | Export tasks from this group. |
 | `task export` | `--sort id\|created_at\|done` | `-s` | `id` | Set the exported task sort order. |
+| `task export` | `--output <filename>` | `-o` | `tasks` | Set the output filename without its extension. |
 | `task purge` | `--force` | — | off | Required before permanently deleting all tasks. |
 
 ## Examples
@@ -109,11 +113,15 @@ todoer task list --group all
 # Show a group ordered by creation time
 todoer task list -g personal -s created_at
 
+# Show task status counts for every group, or for one group
+todoer group stats
+todoer group stats -g work
+
 # Clear only completed tasks from the default group
 todoer task clear
 
-# Export the work group; creates or overwrites tasks.json in the current directory
-todoer task export -g work -f json
+# Export the work group to work-tasks.json in the current directory
+todoer task export -g work -f json -o work-tasks
 ```
 
 ## Data and exports
@@ -126,7 +134,7 @@ todoer task export -g work -f json
 | Linux | `~/.local/share/todoer/todoer.db` |
 | Windows | `%LOCALAPPDATA%\\todoer\\todoer.db` |
 
-Exports are written to the current working directory as `tasks.csv` or `tasks.json`. Exporting in the same directory replaces the existing file of that format.
+Exports are written to the current working directory. By default, the files are named `tasks.csv` or `tasks.json`; use `--output` to supply a different base filename. Exporting with the same filename and format replaces the existing file.
 
 ## Development
 
