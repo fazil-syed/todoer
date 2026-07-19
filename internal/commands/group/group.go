@@ -23,6 +23,7 @@ func (g *GroupCommand) RegisterGroupCommands() *cli.Command {
 		Commands: []*cli.Command{
 			g.AddGroupCommand(),
 			g.ListGroupsCommand(),
+			g.ListGroupStatsCommand(),
 		},
 	}
 }

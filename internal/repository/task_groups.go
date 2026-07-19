@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/fazil-syed/todoer/internal/models"
+	"github.com/fazil-syed/todoer/internal/types"
 )
 
 type TaskGroupsRepository struct {
@@ -82,4 +83,58 @@ func (r *TaskGroupsRepository) GetByName(ctx context.Context, name string) (*mod
 		return nil, err
 	}
 	return &taskGroup, nil
+}
+
+func (r *TaskGroupsRepository) GetGroupStats(ctx context.Context, name string) (*types.GroupStats, error) {
+	row := r.db.QueryRowContext(ctx, `
+		SELECT g.id,g.name,
+		SUM(CASE WHEN t.status = 'TODO' THEN 1 ELSE 0 END) AS todo_count,
+		SUM(CASE WHEN t.status = 'IN_PROGRESS' THEN 1 ELSE 0 END) AS inprogress_count,
+		SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END) AS done_count,
+		COUNT(t.id) AS total_count
+		FROM tasks t
+		INNER JOIN task_groups g ON t.group_id=g.id
+			WHERE g.name = ?
+			GROUP BY g.name,g.id
+	`, name)
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+	var groupStats types.GroupStats
+
+	if err := row.Scan(&groupStats.GroupID, &groupStats.GroupName, &groupStats.Todo, &groupStats.InProgress, &groupStats.Done, &groupStats.Total); err != nil {
+		return nil, err
+	}
+
+	return &groupStats, nil
+}
+
+func (r *TaskGroupsRepository) GetAllGroupStats(ctx context.Context) ([]types.GroupStats, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT g.id,g.name,
+		SUM(CASE WHEN t.status = 'TODO' THEN 1 ELSE 0 END) AS todo_count,
+		SUM(CASE WHEN t.status = 'IN_PROGRESS' THEN 1 ELSE 0 END) AS inprogress_count,
+		SUM(CASE WHEN t.status = 'DONE' THEN 1 ELSE 0 END) AS done_count,
+		COUNT(t.id) AS total_count
+		FROM tasks t
+		INNER JOIN task_groups g ON t.group_id=g.id
+			GROUP BY g.name,g.id
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var groupStats []types.GroupStats
+	for rows.Next() {
+		var gs types.GroupStats
+		if err := rows.Scan(&gs.GroupID, &gs.GroupName, &gs.Todo, &gs.InProgress, &gs.Done, &gs.Total); err != nil {
+			return nil, err
+		}
+		groupStats = append(groupStats, gs)
+
+	}
+
+	return groupStats, nil
 }
