@@ -2,58 +2,70 @@ package task
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/fazil-syed/todoer/internal/models"
 	"github.com/urfave/cli/v3"
 )
 
 func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command) error {
+	args := cmd.Args().Slice()
 
-	taskID := cmd.Args().First()
-
-	if taskID == "" {
+	if len(args) == 0 {
 		fmt.Println("missing task id")
 		return nil
 	}
 
-	id, err := strconv.Atoi(taskID)
-	if err != nil {
-		return err
-	}
-	task, err := c.tasksRepository.GetById(ctx, int64(id))
+	ids := make([]int64, 0, len(args))
 
-	if err != nil {
-		return err
+	for _, arg := range args {
+		id, err := strconv.Atoi(arg)
+		if err != nil {
+			return fmt.Errorf("invalid task id %q: %w", arg, err)
+		}
+		ids = append(ids, int64(id))
 	}
-	if task.Status == "DONE" {
-		return errors.New("Task already in DONE state")
-	}
-	if err := c.tasksRepository.Complete(ctx, int64(id)); err != nil {
-		return err
-	}
-	now := time.Now()
-	if !task.StartedAt.Valid {
-		if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), &now); err != nil {
+	var tasks []models.Task
+	for _, id := range ids {
+
+		task, err := c.tasksRepository.GetById(ctx, int64(id))
+
+		if err != nil {
 			return err
 		}
-	}
-	if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), &now); err != nil {
-		return err
-	}
-	task, err = c.tasksRepository.GetById(ctx, int64(task.ID))
+		if task.Status == "DONE" {
+			return fmt.Errorf("Task %d already in DONE state", task.ID)
+		}
+		if err := c.tasksRepository.Complete(ctx, int64(id)); err != nil {
+			return err
+		}
+		now := time.Now()
+		if !task.StartedAt.Valid {
+			if err := c.tasksRepository.UpdateStartedAtTime(ctx, int64(id), &now); err != nil {
+				return err
+			}
+		}
+		if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), &now); err != nil {
+			return err
+		}
+		task, err = c.tasksRepository.GetById(ctx, int64(task.ID))
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+		tasks = append(tasks, *task)
+
 	}
-	fmt.Println("Completed task")
+	fmt.Println("Completed tasks")
 	printer := NewTaskPrinter(os.Stdout)
 	defer printer.Flush()
 	printer.PrintSingleTaskHeadLine()
-	printer.PrintSingleTask(*task, false)
+	for _, task := range tasks {
+		printer.PrintSingleTask(task, false)
+	}
 	return nil
 
 }
