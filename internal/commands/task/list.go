@@ -12,7 +12,8 @@ import (
 
 func (c *TaskCommand) listAllGroupTasks(ctx context.Context, cmd *cli.Command) error {
 	sortOrder := cmd.String("sort")
-	tasks, err := c.tasksRepository.GetAllTasksByGroup(ctx, sortOrder)
+	fetchArchived := cmd.Bool("all")
+	tasks, err := c.tasksRepository.GetAllTasksByGroup(ctx, sortOrder, fetchArchived)
 	if err != nil {
 		return err
 	}
@@ -33,6 +34,7 @@ func (c *TaskCommand) listAllGroupTasks(ctx context.Context, cmd *cli.Command) e
 func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) error {
 	groupName := cmd.String("group")
 	sortOrder := cmd.String("sort")
+	fetchArchived := cmd.Bool("all")
 
 	switch sortOrder {
 	case "done", "created_at", "id":
@@ -50,7 +52,8 @@ func (c *TaskCommand) listTasksHandler(ctx context.Context, cmd *cli.Command) er
 		}
 		return err
 	}
-	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID, sortOrder)
+
+	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID, sortOrder, fetchArchived)
 	if err != nil {
 		return err
 	}
@@ -95,6 +98,11 @@ Examples:
 				Aliases: []string{"s"},
 				Value:   "id",
 				Usage:   "sort by: id, created_at, or done",
+			},
+			&cli.BoolFlag{
+				Name:  "all",
+				Value: false,
+				Usage: "list archived tasks as well",
 			},
 		},
 	}

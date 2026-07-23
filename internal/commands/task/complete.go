@@ -14,6 +14,8 @@ import (
 func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command) error {
 	args := cmd.Args().Slice()
 
+	note := cmd.String("note")
+
 	if len(args) == 0 {
 		fmt.Println("missing task id")
 		return nil
@@ -51,6 +53,12 @@ func (c *TaskCommand) completeTaskCommand(ctx context.Context, cmd *cli.Command)
 		if err := c.tasksRepository.UpdateCompletedAtTime(ctx, int64(id), &now); err != nil {
 			return err
 		}
+		if note != "" {
+			fmt.Println("storting note")
+			if err := c.tasksRepository.AddTaskNote(ctx, int64(id), note); err != nil {
+				return err
+			}
+		}
 		task, err = c.tasksRepository.GetById(ctx, int64(task.ID))
 
 		if err != nil {
@@ -76,6 +84,13 @@ func (c *TaskCommand) CompletTaskCommand() *cli.Command {
 		Aliases: []string{"c", "mark-done", "md"},
 		Usage:   "Complete a task",
 		Action:  c.completeTaskCommand,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "note",
+				Aliases: []string{"n"},
+				Usage:   "store a optional note for task completion",
+			},
+		},
 	}
 	return cmd
 }

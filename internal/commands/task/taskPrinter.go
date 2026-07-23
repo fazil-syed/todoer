@@ -67,29 +67,33 @@ func (tp *TaskPrinter) PrintSingleTask(task models.Task, printGroup bool) {
 	if task.CompletedAt.Valid {
 		completed = task.CompletedAt.Time.Format("02 Jan 2006 03:04 PM")
 	}
+	note := "-"
+	if task.Note.Valid {
+		note = task.Note.String
+	}
 	// First line
 	if printGroup {
-		fmt.Fprintf(tp.w, "%s\t%d\t%s\t%s\t%s\t%s\n", task.GroupName, task.ID, status, lines[0], started, completed)
+		fmt.Fprintf(tp.w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", task.GroupName, task.ID, status, lines[0], started, completed, note)
 
 	} else {
-		fmt.Fprintf(tp.w, "%d\t%s\t%s\t%s\t%s\n", task.ID, status, lines[0], started, completed)
+		fmt.Fprintf(tp.w, "%d\t%s\t%s\t%s\t%s\t%s\n", task.ID, status, lines[0], started, completed, note)
 	}
 
 	// Remaining lines
 	for _, line := range lines[1:] {
 		if printGroup {
-			fmt.Fprintf(tp.w, "\t\t\t%s\t\t\n", line)
+			fmt.Fprintf(tp.w, "\t\t\t%s\t\t\t\n", line)
 		} else {
-			fmt.Fprintf(tp.w, "\t\t%s\t\t\n", line)
+			fmt.Fprintf(tp.w, "\t\t%s\t\t\t\n", line)
 		}
 	}
 }
 
 func (tp *TaskPrinter) PrintSingleTaskHeadLine() {
-	fmt.Fprintln(tp.w, "ID\tStatus\tTask\tStarted At\tCompleted At")
-	fmt.Fprintln(tp.w, "--\t------\t----\t----------\t------------")
+	fmt.Fprintln(tp.w, "ID\tStatus\tTask\tStarted At\tCompleted At\tNote")
+	fmt.Fprintln(tp.w, "--\t------\t----\t----------\t------------\t----")
 }
 func (tp *TaskPrinter) PrintTaskHeadLineWithGroup() {
-	fmt.Fprintln(tp.w, "Group\tID\tStatus\tTask\tStarted At\tCompleted At")
-	fmt.Fprintln(tp.w, "-----\t--\t------\t----\t----------\t------------")
+	fmt.Fprintln(tp.w, "Group\tID\tStatus\tTask\tStarted At\tCompleted At\tNote")
+	fmt.Fprintln(tp.w, "-----\t--\t------\t----\t----------\t------------\t----")
 }

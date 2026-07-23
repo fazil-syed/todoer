@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fazil-syed/todoer/internal/models"
 	"github.com/urfave/cli/v3"
 )
 
@@ -21,7 +22,7 @@ func (c *TaskCommand) clearTaskHandler(ctx context.Context, cmd *cli.Command) er
 		}
 		return err
 	}
-	tasks, err := c.tasksRepository.ListByStatusAndGroup(ctx, taskGroup.ID, "DONE")
+	tasks, err := c.tasksRepository.ListByStatusAndGroup(ctx, taskGroup.ID, "DONE", true)
 	if err != nil {
 		return err
 	}
@@ -29,14 +30,24 @@ func (c *TaskCommand) clearTaskHandler(ctx context.Context, cmd *cli.Command) er
 		fmt.Println("No tasks found")
 		return nil
 	}
-	if err := c.tasksRepository.DeleteCompleted(ctx, taskGroup.ID); err != nil {
-		return err
+	var archivedTask []models.Task
+	for _, task := range tasks {
+		if err := c.tasksRepository.UpdateArchiveStatus(ctx, int64(task.ID), true); err != nil {
+			return err
+		}
+		task, err := c.tasksRepository.GetById(ctx, int64(task.ID))
+
+		if err != nil {
+			return err
+		}
+		archivedTask = append(archivedTask, *task)
+
 	}
-	fmt.Println("completed tasks cleared")
+	fmt.Println("completed tasks archived")
 	printer := NewTaskPrinter(os.Stdout)
 	defer printer.Flush()
 	printer.PrintTaskHeadLineWithGroup()
-	for _, task := range tasks {
+	for _, task := range archivedTask {
 		printer.PrintSingleTask(task, true)
 	}
 	return nil
@@ -47,7 +58,7 @@ func (c *TaskCommand) ClearTasksCommand() *cli.Command {
 	cmd := &cli.Command{
 		Name:    "clear",
 		Aliases: []string{"cl"},
-		Usage:   "Clear completed tasks",
+		Usage:   "Clear completed tasks and mark them as archived",
 		Action:  c.clearTaskHandler,
 		Flags: []cli.Flag{
 			&cli.StringFlag{

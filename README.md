@@ -65,6 +65,20 @@ todoer task complete 2
 
 Use `todoer --help`, `todoer task --help`, or `todoer group --help` for the CLI's built-in help.
 
+### Task titles and the shell
+
+Wrap task titles that contain shell-special characters, such as parentheses, in double quotes so the shell passes them to `todoer` as part of the title:
+
+```sh
+todoer task add "Call Mom (Sunday)"
+```
+
+If a task title begins with `-`, put `--` after all command flags and before the title. This stops the CLI from treating the title as another flag:
+
+```sh
+todoer task add --group work -- "- Review follow-up items"
+```
+
 ## Commands
 
 ### Groups
@@ -79,7 +93,7 @@ Use `todoer --help`, `todoer task --help`, or `todoer group --help` for the CLI'
 
 | Command | Aliases | Description |
 | --- | --- | --- |
-| `todoer task add <title> [--group <name>]` | `task` → `t`; `add` → `a` | Add a TODO task. The group defaults to `default`. |
+| `todoer task add [--group <name>] [--] <title>` | `task` → `t`; `add` → `a` | Add a TODO task. The group defaults to `default`; use `--` before a title that begins with `-`. |
 | `todoer task list [--group <name>\|all] [--sort id\|created_at\|done]` | `task` → `t`; `list` → `l` | List tasks in one group, or all groups. |
 | `todoer task mark-inprogress <id>` | `task` → `t`; `mark-inprogress` → `mi` | Mark a task in progress and set its start time. |
 | `todoer task mark-todo <id>` | `task` → `t`; `mark-todo` → `mt` | Mark a task as TODO. |

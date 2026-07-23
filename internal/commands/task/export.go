@@ -65,7 +65,7 @@ func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) 
 	groupName := cmd.String("group")
 	sortOrder := cmd.String("sort")
 	fileName := cmd.String("output")
-
+	fetchArchived := cmd.Bool("all")
 	taskGroup, err := c.taskGroupsRepository.GetByName(ctx, groupName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -81,7 +81,7 @@ func (c *TaskCommand) exportTasksCommand(ctx context.Context, cmd *cli.Command) 
 		return nil
 	}
 
-	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID, sortOrder)
+	tasks, err := c.tasksRepository.List(ctx, taskGroup.ID, sortOrder, fetchArchived)
 	if err != nil {
 		return err
 	}
@@ -130,6 +130,11 @@ func (c *TaskCommand) ExportTasksCommand() *cli.Command {
 				Value:   "tasks",
 				Aliases: []string{"o"},
 				Usage:   "output file name for export",
+			},
+			&cli.BoolFlag{
+				Name:  "all",
+				Value: false,
+				Usage: "list archived tasks as well",
 			},
 		},
 
