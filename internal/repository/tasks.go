@@ -56,7 +56,7 @@ func (r *TaskRepository) ListByStatusAndGroup(ctx context.Context, groupID int64
 }
 func (r *TaskRepository) List(ctx context.Context, groupID int64, orderBy string) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT id,title,status,started_at,completed_at,created_at,group_id
+		`SELECT id,title,status,started_at,completed_at,created_at,group_id,note
 		 FROM tasks
 		WHERE group_id = ?
 			ORDER BY
@@ -75,7 +75,7 @@ func (r *TaskRepository) List(ctx context.Context, groupID int64, orderBy string
 	for rows.Next() {
 		var t models.Task
 
-		if err := rows.Scan(&t.ID, &t.Title, &t.Status, &t.StartedAt, &t.CompletedAt, &t.CreatedAt, &t.GroupId); err != nil {
+		if err := rows.Scan(&t.ID, &t.Title, &t.Status, &t.StartedAt, &t.CompletedAt, &t.CreatedAt, &t.GroupId, &t.Note); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, t)
@@ -86,6 +86,22 @@ func (r *TaskRepository) List(ctx context.Context, groupID int64, orderBy string
 func (r *TaskRepository) Complete(ctx context.Context, id int64) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE tasks SET status = ? WHERE id = ?", "DONE", id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (r *TaskRepository) AddTaskNote(ctx context.Context, id int64, note string) error {
+	_, err := r.db.ExecContext(ctx,
+		"UPDATE tasks SET note = ? WHERE id = ?", note, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (r *TaskRepository) UpdateArchiveStatus(ctx context.Context, id int64, archived bool) error {
+	_, err := r.db.ExecContext(ctx,
+		"UPDATE tasks SET archived = ? WHERE id = ?", archived, id)
 	if err != nil {
 		return err
 	}
@@ -146,14 +162,14 @@ func (r *TaskRepository) Truncate(ctx context.Context) error {
 }
 
 func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, error) {
-	row := r.db.QueryRowContext(ctx, "SELECT id,title,status,created_at,started_at,completed_at,group_id FROM tasks WHERE id = ?", id)
+	row := r.db.QueryRowContext(ctx, "SELECT id,title,status,created_at,started_at,completed_at,group_id,note FROM tasks WHERE id = ?", id)
 	if err := row.Err(); err != nil {
 		return nil, err
 	}
 
 	var task models.Task
 
-	if err := row.Scan(&task.ID, &task.Title, &task.Status, &task.CreatedAt, &task.StartedAt, &task.CompletedAt, &task.GroupId); err != nil {
+	if err := row.Scan(&task.ID, &task.Title, &task.Status, &task.CreatedAt, &task.StartedAt, &task.CompletedAt, &task.GroupId, &task.Note); err != nil {
 		return nil, err
 	}
 	return &task, nil
@@ -161,7 +177,7 @@ func (r *TaskRepository) GetById(ctx context.Context, id int64) (*models.Task, e
 
 func (r *TaskRepository) GetAllTasksByGroup(ctx context.Context, orderBy string) ([]models.Task, error) {
 	rows, err := r.db.QueryContext(ctx,
-		`SELECT t.id,t.title,t.status,t.created_at,t.started_at,t.completed_at,t.group_id,g.name
+		`SELECT t.id,t.title,t.status,t.created_at,t.started_at,t.completed_at,t.group_id,t.note,g.name
 		 FROM tasks t
 		 INNER JOIN task_groups g ON t.group_id=g.id
 			ORDER BY
@@ -180,7 +196,7 @@ func (r *TaskRepository) GetAllTasksByGroup(ctx context.Context, orderBy string)
 	for rows.Next() {
 		var t models.Task
 
-		if err := rows.Scan(&t.ID, &t.Title, &t.Status, &t.CreatedAt, &t.StartedAt, &t.CompletedAt, &t.GroupId, &t.GroupName); err != nil {
+		if err := rows.Scan(&t.ID, &t.Title, &t.Status, &t.CreatedAt, &t.StartedAt, &t.CompletedAt, &t.GroupId, &t.Note, &t.GroupName); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, t)
