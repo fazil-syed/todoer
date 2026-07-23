@@ -1,14 +1,15 @@
 # todoer
 
-`todoer` is a local, SQLite-backed command-line task manager written in Go. It supports the complete day-to-day task workflow: organizing work into groups, tracking TODO, in-progress, and completed states, recording progress timestamps, reviewing tasks across groups, cleaning up completed work, and exporting task data. No account or network connection is required.
+`todoer` is a local, SQLite-backed command-line task manager written in Go. It supports the complete day-to-day task workflow: organizing work into groups, tracking TODO, in-progress, and completed states, recording progress timestamps and completion notes, archiving completed work, reviewing tasks across groups, and exporting task data. No account or network connection is required.
 
 ## Features
 
 - Create and list task groups, including the automatically created `default` group
 - View TODO, in-progress, completed, and total task counts for one group or all groups
-- Add tasks, move them between TODO, in-progress, and completed states, and record timestamps
+- Add tasks, move them between TODO, in-progress, and completed states, and record timestamps and optional completion notes
+- Archive completed tasks and restore them later; archived tasks are hidden from lists and exports by default
 - List a single group's tasks or every task across groups, with sortable output
-- Delete individual tasks, clear completed tasks from a group, or purge all tasks with an explicit confirmation flag
+- Delete tasks, archive all completed tasks in a group, or purge all tasks with an explicit confirmation flag
 - Export group data as CSV or JSON with a custom output filename
 
 
@@ -60,7 +61,7 @@ todoer task add Fix login bug --group work
 # View tasks and update their state
 todoer task list --group work
 todoer task mark-inprogress 2
-todoer task complete 2
+todoer task complete --note "Fixed in the latest release" 2
 ```
 
 Use `todoer --help`, `todoer task --help`, or `todoer group --help` for the CLI's built-in help.
@@ -94,13 +95,15 @@ todoer task add --group work -- "- Review follow-up items"
 | Command | Aliases | Description |
 | --- | --- | --- |
 | `todoer task add [--group <name>] [--] <title>` | `task` → `t`; `add` → `a` | Add a TODO task. The group defaults to `default`; use `--` before a title that begins with `-`. |
-| `todoer task list [--group <name>\|all] [--sort id\|created_at\|done]` | `task` → `t`; `list` → `l` | List tasks in one group, or all groups. |
-| `todoer task mark-inprogress <id>` | `task` → `t`; `mark-inprogress` → `mi` | Mark a task in progress and set its start time. |
-| `todoer task mark-todo <id>` | `task` → `t`; `mark-todo` → `mt` | Mark a task as TODO. |
-| `todoer task complete <id>` | `task` → `t`; `complete` → `c`, `mark-done`, `md` | Mark a task done and set its completion time. |
-| `todoer task delete <id>` | `task` → `t`; `delete` → `d` | Permanently delete one task. |
-| `todoer task clear [--group <name>]` | `task` → `t`; `clear` → `cl` | Permanently remove completed tasks from a group. |
-| `todoer task export [--format csv\|json] [--group <name>] [--sort id\|created_at\|done] [--output <filename>]` | `task` → `t`; `export` → `e` | Export a group's tasks. |
+| `todoer task list [--group <name>\|all] [--sort id\|created_at\|done] [--all]` | `task` → `t`; `list` → `l` | List tasks in one group, or all groups. Archived tasks require `--all`. |
+| `todoer task mark-inprogress <id>...` | `task` → `t`; `mark-inprogress` → `mi` | Mark one or more tasks in progress and set their start times. |
+| `todoer task mark-todo <id>...` | `task` → `t`; `mark-todo` → `mt` | Mark one or more tasks as TODO. |
+| `todoer task complete [--note <text>] <id>...` | `task` → `t`; `complete` → `c`, `mark-done`, `md` | Mark one or more tasks done, set completion times, and optionally save the same note on each task. |
+| `todoer task archive <id>...` | `task` → `t`; `archive` → `ar` | Archive one or more completed tasks. |
+| `todoer task unarchive <id>...` | `task` → `t`; `unarchive` → `uar` | Restore one or more archived tasks to normal lists and exports. |
+| `todoer task delete <id>...` | `task` → `t`; `delete` → `d` | Permanently delete one or more tasks. |
+| `todoer task clear [--group <name>]` | `task` → `t`; `clear` → `cl` | Archive all completed tasks in a group. |
+| `todoer task export [--format csv\|json] [--group <name>] [--sort id\|created_at\|done] [--output <filename>] [--all]` | `task` → `t`; `export` → `e` | Export a group's tasks. Archived tasks require `--all`. |
 | `todoer task purge --force` | `task` → `t`; `purge` → `p` | Permanently remove all tasks in every group. |
 
 ### Flags
@@ -109,13 +112,16 @@ todoer task add --group work -- "- Review follow-up items"
 | --- | --- | --- | --- | --- |
 | `task add` | `--group <name>` | `-g` | `default` | Assign the new task to a group. |
 | `group stats` | `--group <name\|all>` | `-g` | `all` | Show statistics for one group, or for every group. |
+| `task complete` | `--note <text>` | `-n` | — | Store a completion note. With multiple IDs, the same note is stored on each task. |
 | `task list` | `--group <name\|all>` | `-g` | `default` | List one group, or use `all` to list every group. |
 | `task list` | `--sort id\|created_at\|done` | `-s` | `id` | Set the task sort order. |
-| `task clear` | `--group <name>` | `-g` | `default` | Clear completed tasks only from this group. |
+| `task list` | `--all` | — | off | Include archived tasks. |
+| `task clear` | `--group <name>` | `-g` | `default` | Archive completed tasks only from this group. |
 | `task export` | `--format csv\|json` | `-f` | `csv` | Choose the export file format. |
 | `task export` | `--group <name>` | `-g` | `default` | Export tasks from this group. |
 | `task export` | `--sort id\|created_at\|done` | `-s` | `id` | Set the exported task sort order. |
 | `task export` | `--output <filename>` | `-o` | `tasks` | Set the output filename without its extension. |
+| `task export` | `--all` | — | off | Include archived tasks in the export. |
 | `task purge` | `--force` | — | off | Required before permanently deleting all tasks. |
 
 ## Examples
@@ -131,11 +137,21 @@ todoer task list -g personal -s created_at
 todoer group stats
 todoer group stats -g work
 
-# Clear only completed tasks from the default group
+# Complete several tasks and store the same completion note on each
+todoer task complete -n "Released to production" 3 4
+
+# Archive a completed task; only completed tasks can be archived
+todoer task archive 3
+
+# Include archived tasks when listing, then restore a task to normal lists
+todoer task list --all
+todoer task unarchive 3
+
+# Archive every completed task from the default group
 todoer task clear
 
-# Export the work group to work-tasks.json in the current directory
-todoer task export -g work -f json -o work-tasks
+# Export the work group, including archived tasks, to work-tasks.json
+todoer task export -g work -f json -o work-tasks --all
 ```
 
 ## Data and exports
@@ -148,7 +164,9 @@ todoer task export -g work -f json -o work-tasks
 | Linux | `~/.local/share/todoer/todoer.db` |
 | Windows | `%LOCALAPPDATA%\\todoer\\todoer.db` |
 
-Exports are written to the current working directory. By default, the files are named `tasks.csv` or `tasks.json`; use `--output` to supply a different base filename. Exporting with the same filename and format replaces the existing file.
+Archived tasks are excluded from lists and exports by default. Use `--all` with `task list` or `task export` to include both active and archived tasks.
+
+Exports are written to the current working directory. By default, the files are named `tasks.csv` or `tasks.json`; use `--output` to supply a different base filename. Exporting with the same filename and format replaces the existing file. JSON exports include task metadata, including archive status and completion notes; CSV exports retain their existing task, status, and timestamp columns.
 
 ## Development
 
