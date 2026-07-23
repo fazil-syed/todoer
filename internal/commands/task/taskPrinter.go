@@ -67,12 +67,16 @@ func (tp *TaskPrinter) PrintSingleTask(task models.Task, printGroup bool) {
 	if task.CompletedAt.Valid {
 		completed = task.CompletedAt.Time.Format("02 Jan 2006 03:04 PM")
 	}
+	note := "-"
+	if task.Note.Valid {
+		note = task.Note.String
+	}
 	// First line
 	if printGroup {
-		fmt.Fprintf(tp.w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", task.GroupName, task.ID, status, lines[0], started, completed, task.Note)
+		fmt.Fprintf(tp.w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", task.GroupName, task.ID, status, lines[0], started, completed, note)
 
 	} else {
-		fmt.Fprintf(tp.w, "%d\t%s\t%s\t%s\t%s\t%s\n", task.ID, status, lines[0], started, completed, task.Note)
+		fmt.Fprintf(tp.w, "%d\t%s\t%s\t%s\t%s\t%s\n", task.ID, status, lines[0], started, completed, note)
 	}
 
 	// Remaining lines

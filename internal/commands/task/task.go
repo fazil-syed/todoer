@@ -31,6 +31,8 @@ func (t *TaskCommand) RegisterTaskCommands() *cli.Command {
 			t.PurgeTasksCommand(),
 			t.MarkInprogressTaskCommand(),
 			t.MarkTodoTaskCommand(),
+			t.ArchiveTaskCommand(),
+			t.UnArchiveTaskCommand(),
 		},
 	}
 }
